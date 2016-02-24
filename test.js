@@ -24,7 +24,7 @@ describe('update', function() {
     expect(o.log.length).to.eql(2)
     expect(last(o.log).diff).to.eql({ key: '1', value: 'lol', type: 'update' })
     expect(last(o.log).value.toJS()).to.eql(['foo', 'lol', 'baz'])
-    expect(changes).to.eql(o.log.slice(1).map(d => d.diff))
+    expect(changes).to.eql(o.log.slice(1).map(function(d) { return d.diff }))
   })
     
   it('should update - object', function(){
@@ -42,7 +42,7 @@ describe('update', function() {
     expect(o.log.length).to.eql(2)
     expect(last(o.log).diff).to.eql({ key: 'foo', value: 'baz', type: 'update' })
     expect(last(o.log).value.toJS()).to.eql({ foo: 'baz' })
-    expect(changes).to.eql(o.log.slice(1).map(d => d.diff))
+    expect(changes).to.eql(o.log.slice(1).map(function(d) { return d.diff }))
   })
 
   it('should skip gracefully', function(){
