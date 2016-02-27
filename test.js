@@ -50,4 +50,17 @@ describe('update', function() {
     expect(update('foo', 'bar')(5)).to.be.eql(5)
   })
 
+  it('should work deeply', function() {
+    var changes = []
+      , o = versioned({ a: { b: { c: 5 }}}).on('log', function(diff){ changes.push(diff) })
+
+    update('a.b.c', 10)(o)
+    expect(o.log.length).to.eql(2)
+    expect(last(o.log).diff).to.eql({ key: 'a.b.c', value: 10, type: 'update' })
+    expect(last(o.log).value.toJS()).to.eql({ a: { b: { c: 10 }}})
+    expect(changes).to.eql([
+      { key: 'a.b.c', value: 10, type: 'update' }
+    ])
+  })
+
 })
