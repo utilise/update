@@ -1,7 +1,7 @@
-var versioned = require('versioned').default
-  , expect = require('chai').expect
+var expect = require('chai').expect
   , update = require('./')
   , last = require('utilise.last')
+  , set = require('utilise.set')
 
 describe('update', function() {
 
@@ -10,39 +10,21 @@ describe('update', function() {
   })
 
   it('should update - array', function(){
-    var changes = []
-      , o = versioned(['foo', 'bar', 'baz']).on('log', function(diff){ changes.push(diff) })
-
-    expect(o).to.eql(['foo', 'bar', 'baz'])
-    expect(o.log.length).to.eql(1) 
-    expect(last(o.log).diff).to.eql(undefined)
-    expect(last(o.log).value.toJS()).to.eql(['foo', 'bar', 'baz'])
-    expect(changes).to.eql([])
-
-    expect(update(1, 'lol')(o)).to.eql(o)
+    var o = set()(['foo', 'bar', 'baz'])
+    
+    expect(update(1, 'lol')(o)).to.equal(o)
     expect(o).to.eql(['foo', 'lol', 'baz'])
     expect(o.log.length).to.eql(2)
-    expect(last(o.log).diff).to.eql({ key: '1', value: 'lol', type: 'update' })
-    expect(last(o.log).value.toJS()).to.eql(['foo', 'lol', 'baz'])
-    expect(changes).to.eql(o.log.slice(1).map(function(d) { return d.diff }))
+    expect(last(o.log)).to.eql({ key: '1', value: 'lol', type: 'update', time: 1 })
   })
     
   it('should update - object', function(){
-    var changes = []
-      , o = versioned({ foo: 'bar' }).on('log', function(diff){ changes.push(diff) })
+    var o = set()({ foo: 'bar' })
 
-    expect(o).to.eql({ foo: 'bar' })
-    expect(o.log.length).to.eql(1)
-    expect(last(o.log).diff).to.eql(undefined)
-    expect(last(o.log).value.toJS()).to.eql({ foo: 'bar' })
-    expect(changes).to.eql([])
-
-    expect(update('foo', 'baz')(o)).to.eql(o)
+    expect(update('foo', 'baz')(o)).to.equal(o)
     expect(o).to.eql({ foo: 'baz' })
     expect(o.log.length).to.eql(2)
-    expect(last(o.log).diff).to.eql({ key: 'foo', value: 'baz', type: 'update' })
-    expect(last(o.log).value.toJS()).to.eql({ foo: 'baz' })
-    expect(changes).to.eql(o.log.slice(1).map(function(d) { return d.diff }))
+    expect(last(o.log)).to.eql({ key: 'foo', value: 'baz', type: 'update', time: 1 })
   })
 
   it('should skip gracefully', function(){
@@ -51,16 +33,13 @@ describe('update', function() {
   })
 
   it('should work deeply', function() {
-    var changes = []
-      , o = versioned({ a: { b: { c: 5 }}}).on('log', function(diff){ changes.push(diff) })
+    var change = []
+      , o = set()({ a: { b: { c: 5 }}}).on('change', function(diff){ change = diff })
 
     update('a.b.c', 10)(o)
     expect(o.log.length).to.eql(2)
-    expect(last(o.log).diff).to.eql({ key: 'a.b.c', value: 10, type: 'update' })
-    expect(last(o.log).value.toJS()).to.eql({ a: { b: { c: 10 }}})
-    expect(changes).to.eql([
-      { key: 'a.b.c', value: 10, type: 'update' }
-    ])
+    expect(last(o.log)).to.eql({ key: 'a.b.c', value: 10, type: 'update', time: 1 })
+    expect(change).to.eql(last(o.log))
   })
 
 })
